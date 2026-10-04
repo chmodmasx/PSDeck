@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
+
+      - name: Build Decky frontend
+        run: pnpm build
+
+      - name: Validate plugin metadata
+        run: node -e "JSON.parse(require('fs').readFileSync('plugin.json', 'utf8'))"
+
+      - name: Package Decky plugin
+        run: |
+          mkdir -p artifacts/PSDeck/dist
+          cp dist/index.js artifacts/PSDeck/dist/index.js
+          cp package.json plugin.json README.md LICENSE artifacts/PSDeck/
+          cd artifacts
+          zip -r PSDeck-Decky-dev.zip PSDeck
+
+      - name: Upload development package
+        uses: actions/upload-artifact@v4
+        with:
+          name: PSDeck-Decky-dev
+          path: artifacts/PSDeck-Decky-dev.zip
+          if-no-files-found: error
