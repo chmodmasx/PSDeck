@@ -1,0 +1,79 @@
+name: Publish alpha release
+
+on:
+  push:
+    branches:
+      - "release/v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
+
+      - name: Build Decky frontend
+        run: pnpm build
+
+      - name: Package plugin
+        run: |
+          rm -rf release
+          mkdir -p release/PSDeck/dist
+          cp dist/index.js release/PSDeck/dist/index.js
+          cp package.json plugin.json README.md LICENSE release/PSDeck/
+          (
+            cd release
+            zip -r ../PSDeck-Decky.zip PSDeck
+          )
+
+      - name: Publish prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME#release/}"
+
+          cat > release-notes.md <<'EOF'
+          First PS Vita rewrite hardware-test alpha.
+
+          Included:
+          - PSDeck-Decky.zip — PS Vita-inspired Home and LiveArea Decky plugin.
+
+          Current milestone:
+          - one Home page
+          - six Vita-style bubbles
+          - Steam-native controller focus
+          - D-pad / stick navigation
+          - A opens LiveArea
+          - B returns from LiveArea
+          - A in LiveArea activates the app destination
+          - Library, Store and Friends/Chat use verified Decky navigation calls
+          - Settings, Downloads and Media remain diagnostic until mapped on-device
+
+          CSS Loader is intentionally not included yet. Native Steam surfaces will be themed after the Vita shell and navigation are validated on hardware.
+          EOF
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" PSDeck-Decky.zip --clobber
+          else
+            gh release create "$TAG"               PSDeck-Decky.zip               --target "${GITHUB_SHA}"               --title "PSDeck $TAG"               --notes-file release-notes.md               --prerelease
+          fi
