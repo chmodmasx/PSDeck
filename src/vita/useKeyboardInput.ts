@@ -1,8 +1,10 @@
 import { useEffect, useRef } from "react";
-import type { VitaAction } from "./state";
+import type { VitaDirection } from "./state";
+
+export type VitaInputAction = VitaDirection | "accept" | "back";
 
 type Props = {
-  onAction: (action: VitaAction) => void;
+  onAction: (action: VitaInputAction) => void;
 };
 
 export function useKeyboardInput({ onAction }: Props) {
@@ -13,7 +15,7 @@ export function useKeyboardInput({ onAction }: Props) {
   }, [onAction]);
 
   useEffect(() => {
-    const keymap: Record<string, VitaAction | undefined> = {
+    const keymap: Record<string, VitaInputAction | undefined> = {
       ArrowLeft: "left",
       ArrowRight: "right",
       ArrowUp: "up",
