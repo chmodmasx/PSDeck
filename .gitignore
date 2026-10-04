@@ -1,0 +1,9 @@
+node_modules/
+.pnpm-store/
+dist/
+release/
+*.log
+.env
+.DS_Store
+Thumbs.db
+.vscode/settings.json
