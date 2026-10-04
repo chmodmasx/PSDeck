@@ -1,0 +1,11 @@
+{
+  "name": "PSDeck",
+  "author": "chmodmasx",
+  "flags": ["debug"],
+  "api_version": 1,
+  "publish": {
+    "tags": ["theme", "ui", "ps-vita"],
+    "description": "PS Vita-inspired Home and LiveArea interface for Steam Deck Gaming Mode.",
+    "image": "https://opengraph.githubassets.com/1/chmodmasx/PSDeck"
+  }
+}
