@@ -53,23 +53,35 @@ jobs:
           TAG="${GITHUB_REF_NAME#release/}"
 
           cat > release-notes.md <<'EOF'
-          First PS Vita rewrite hardware-test alpha.
+          PS Vita Home milestone.
 
           Included:
-          - PSDeck-Decky.zip — PS Vita-inspired Home and LiveArea Decky plugin.
+          - PSDeck-Decky.zip
 
-          Current milestone:
-          - one Home page
-          - six Vita-style bubbles
-          - Steam-native controller focus
-          - D-pad / stick navigation
-          - A opens LiveArea
-          - B returns from LiveArea
-          - A in LiveArea activates the app destination
-          - Library, Store and Friends/Chat use verified Decky navigation calls
-          - Settings, Downloads and Media remain diagnostic until mapped on-device
+          New in this alpha:
+          - PS Vita-style 3-4-3 Home layout
+          - up to 10 bubbles per page and 10 vertical pages
+          - installed Steam games and non-Steam shortcuts appear directly on Home
+          - recently played games are ordered first
+          - image-based Vita-inspired system bubbles
+          - Steam artwork for game bubbles with local-cache-first fallbacks
+          - spatial D-pad / stick navigation across the 3-4-3 geometry
+          - vertical page changes with the controller
+          - touchscreen bubble activation
+          - vertical touchscreen swipe between Home pages
+          - touchable page indicators
+          - touchable LiveArea back control and gate
+          - LiveArea gate launches real Steam games through SteamClient.Apps.RunGame
+          - image-based LiveArea with game artwork
 
-          CSS Loader is intentionally not included yet. Native Steam surfaces will be themed after the Vita shell and navigation are validated on hardware.
+          Still pending direct Steam route mapping:
+          - Settings
+          - Downloads
+          - Media
+
+          Sony firmware artwork is not distributed. PSDeck's bundled system artwork is original Vita-inspired artwork.
+
+          CSS Loader remains intentionally deferred until the shell is stable on hardware.
           EOF
 
           if gh release view "$TAG" >/dev/null 2>&1; then
