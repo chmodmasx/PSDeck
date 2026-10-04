@@ -1,98 +1,108 @@
+import storeIcon from "../assets/vita/store.svg";
+import friendsIcon from "../assets/vita/friends.svg";
+import settingsIcon from "../assets/vita/settings.svg";
+import downloadsIcon from "../assets/vita/downloads.svg";
+import mediaIcon from "../assets/vita/media.svg";
+import gameFallbackIcon from "../assets/vita/game-fallback.svg";
+
 export type VitaDestination =
-  | "steam:library"
   | "steam:store"
   | "steam:friends"
   | "steam:settings"
   | "steam:downloads"
   | "steam:media";
 
-export type VitaIcon =
-  | "library"
-  | "store"
-  | "friends"
-  | "settings"
-  | "downloads"
-  | "media";
-
 export type VitaApp = {
   id: string;
+  kind: "system" | "game";
   title: string;
   subtitle: string;
-  icon: VitaIcon;
-  destination: VitaDestination;
   startLabel: string;
   accent: string;
   accentDark: string;
   details: string[];
+  imageUrls: string[];
+  destination?: VitaDestination;
+  appId?: number;
+  gameId?: string;
+  appType?: number;
+  lastPlayed?: number;
 };
 
-export const VITA_APPS: VitaApp[] = [
+export const VITA_PAGE_SIZE = 10;
+export const VITA_MAX_PAGES = 10;
+export const VITA_MAX_HOME_APPS = VITA_PAGE_SIZE * VITA_MAX_PAGES;
+
+export const GAME_FALLBACK_ICON = gameFallbackIcon;
+
+export const VITA_SYSTEM_APPS: VitaApp[] = [
   {
-    id: "library",
-    title: "Library",
-    subtitle: "Your Steam games",
-    icon: "library",
-    destination: "steam:library",
-    startLabel: "Start",
-    accent: "#2f9be9",
-    accentDark: "#07558f",
-    details: ["Installed games", "Recent titles", "Collections"]
-  },
-  {
-    id: "store",
+    id: "system:store",
+    kind: "system",
     title: "Store",
     subtitle: "Steam Store",
-    icon: "store",
     destination: "steam:store",
     startLabel: "Open",
     accent: "#22a6d5",
     accentDark: "#05607f",
-    details: ["Browse games", "Wishlist", "Special offers"]
+    details: ["Browse games", "Wishlist", "Special offers"],
+    imageUrls: [storeIcon]
   },
   {
-    id: "friends",
+    id: "system:friends",
+    kind: "system",
     title: "Friends",
     subtitle: "Chat and social",
-    icon: "friends",
     destination: "steam:friends",
     startLabel: "Open",
-    accent: "#50b95b",
-    accentDark: "#197028",
-    details: ["Friends list", "Chat", "Invitations"]
+    accent: "#397ecf",
+    accentDark: "#254c9a",
+    details: ["Friends list", "Chat", "Invitations"],
+    imageUrls: [friendsIcon]
   },
   {
-    id: "settings",
+    id: "system:settings",
+    kind: "system",
     title: "Settings",
     subtitle: "Steam Deck settings",
-    icon: "settings",
     destination: "steam:settings",
     startLabel: "Open",
     accent: "#858c98",
     accentDark: "#414852",
-    details: ["System", "Display", "Controller"]
+    details: ["System", "Display", "Controller"],
+    imageUrls: [settingsIcon]
   },
   {
-    id: "downloads",
+    id: "system:downloads",
+    kind: "system",
     title: "Downloads",
     subtitle: "Manage downloads",
-    icon: "downloads",
     destination: "steam:downloads",
     startLabel: "Open",
     accent: "#ef8b36",
     accentDark: "#a74b09",
-    details: ["Active downloads", "Updates", "Queue"]
+    details: ["Active downloads", "Updates", "Queue"],
+    imageUrls: [downloadsIcon]
   },
   {
-    id: "media",
+    id: "system:media",
+    kind: "system",
     title: "Media",
     subtitle: "Screenshots and recordings",
-    icon: "media",
     destination: "steam:media",
     startLabel: "Open",
     accent: "#b363d7",
     accentDark: "#6b278b",
-    details: ["Screenshots", "Game recordings", "Captures"]
+    details: ["Screenshots", "Game recordings", "Captures"],
+    imageUrls: [mediaIcon]
   }
 ];
 
-export const HOME_COLUMNS = 3;
+export function buildHomeApps(games: VitaApp[]): VitaApp[] {
+  const availableGames = games.slice(
+    0,
+    Math.max(0, VITA_MAX_HOME_APPS - VITA_SYSTEM_APPS.length)
+  );
+
+  return [...VITA_SYSTEM_APPS, ...availableGames];
+}
