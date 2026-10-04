@@ -10,20 +10,27 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
-  useReducer,
+  useMemo,
   useRef,
   useState,
   type FC,
   type RefAttributes
 } from "react";
-import { activateDestination } from "../steam/navigation";
+import { activateApp } from "../steam/navigation";
+import { useSteamLibrary } from "../steam/useSteamLibrary";
 import { LiveArea } from "./LiveArea";
 import { StatusBar } from "./StatusBar";
-import { VITA_APPS } from "./model";
+import {
+  buildHomeApps,
+  type VitaApp
+} from "./model";
 import {
   createInitialVitaView,
-  reduceVitaView,
-  type VitaAction
+  firstIndexForPage,
+  moveHomeIndex,
+  pageForIndex,
+  type VitaDirection,
+  type VitaView
 } from "./state";
 import { VITA_STYLES } from "./styles";
 import { useKeyboardInput } from "./useKeyboardInput";
@@ -46,19 +53,42 @@ function consume(event: GamepadEvent) {
   event.stopImmediatePropagation();
 }
 
+function findLiveAreaApp(view: VitaView, apps: VitaApp[]): VitaApp | null {
+  if (view.kind !== "livearea") return null;
+  return apps.find((app) => app.id === view.appId) ?? null;
+}
+
 export function VitaShell() {
   const focusAnchor = useRef<HTMLDivElement>(null);
-  const [view, dispatch] = useReducer(
-    reduceVitaView,
-    undefined,
-    createInitialVitaView
-  );
+  const steamGames = useSteamLibrary();
+  const apps = useMemo(() => buildHomeApps(steamGames), [steamGames]);
+
+  const [view, setView] = useState<VitaView>(createInitialVitaView);
   const [now, setNow] = useState(() => new Date());
+  const [pageDirection, setPageDirection] = useState<
+    "next" | "previous" | null
+  >(null);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    setView((current) => {
+      if (current.kind !== "home") return current;
+      if (apps.length === 0) return { kind: "home", selectedIndex: 0 };
+
+      const selectedIndex = Math.min(
+        current.selectedIndex,
+        apps.length - 1
+      );
+
+      return selectedIndex === current.selectedIndex
+        ? current
+        : { kind: "home", selectedIndex };
+    });
+  }, [apps.length]);
 
   useLayoutEffect(() => {
     let attempts = 0;
@@ -84,11 +114,38 @@ export function VitaShell() {
     return () => window.clearInterval(timer);
   }, []);
 
-  const activateLiveArea = useCallback(() => {
-    if (view.kind !== "livearea") return;
+  const openApp = useCallback(
+    (index: number) => {
+      const app = apps[index];
+      if (!app) return;
 
-    const app = VITA_APPS[view.appIndex];
-    const result = activateDestination(app.destination);
+      setView({
+        kind: "livearea",
+        appId: app.id,
+        homeIndex: index
+      });
+    },
+    [apps]
+  );
+
+  const backToHome = useCallback(() => {
+    setView((current) => {
+      if (current.kind !== "livearea") return current;
+      return {
+        kind: "home",
+        selectedIndex: Math.min(
+          current.homeIndex,
+          Math.max(0, apps.length - 1)
+        )
+      };
+    });
+  }, [apps.length]);
+
+  const startLiveArea = useCallback(() => {
+    const app = findLiveAreaApp(view, apps);
+    if (!app) return;
+
+    const result = activateApp(app);
 
     if (!result.handled) {
       toaster.toast({
@@ -96,23 +153,64 @@ export function VitaShell() {
         body: result.message
       });
     }
-  }, [view]);
+  }, [apps, view]);
+
+  const moveHome = useCallback(
+    (direction: VitaDirection) => {
+      setView((current) => {
+        if (current.kind !== "home") return current;
+
+        const nextIndex = moveHomeIndex(
+          current.selectedIndex,
+          direction,
+          apps.length
+        );
+
+        const oldPage = pageForIndex(current.selectedIndex);
+        const newPage = pageForIndex(nextIndex);
+
+        if (newPage !== oldPage) {
+          setPageDirection(newPage > oldPage ? "next" : "previous");
+        } else {
+          setPageDirection(null);
+        }
+
+        return {
+          kind: "home",
+          selectedIndex: nextIndex
+        };
+      });
+    },
+    [apps.length]
+  );
 
   const handleAction = useCallback(
-    (action: VitaAction) => {
-      if (view.kind === "home" && action === "back") {
-        Navigation.NavigateBack();
+    (action: "left" | "right" | "up" | "down" | "accept" | "back") => {
+      if (view.kind === "home") {
+        if (action === "back") {
+          Navigation.NavigateBack();
+          return;
+        }
+
+        if (action === "accept") {
+          openApp(view.selectedIndex);
+          return;
+        }
+
+        moveHome(action);
         return;
       }
 
-      if (view.kind === "livearea" && action === "accept") {
-        activateLiveArea();
+      if (action === "back") {
+        backToHome();
         return;
       }
 
-      dispatch(action);
+      if (action === "accept") {
+        startLiveArea();
+      }
     },
-    [activateLiveArea, view]
+    [backToHome, moveHome, openApp, startLiveArea, view]
   );
 
   useKeyboardInput({ onAction: handleAction });
@@ -163,6 +261,32 @@ export function VitaShell() {
     [handleAction]
   );
 
+  const changePage = useCallback(
+    (page: number) => {
+      setView((current) => {
+        if (current.kind !== "home") return current;
+
+        const currentPage = pageForIndex(current.selectedIndex);
+        if (page === currentPage) return current;
+
+        setPageDirection(page > currentPage ? "next" : "previous");
+
+        return {
+          kind: "home",
+          selectedIndex: firstIndexForPage(page, apps.length)
+        };
+      });
+    },
+    [apps.length]
+  );
+
+  const selectBubble = useCallback((index: number) => {
+    setPageDirection(null);
+    setView({ kind: "home", selectedIndex: index });
+  }, []);
+
+  const liveAreaApp = findLiveAreaApp(view, apps);
+
   return (
     <NativeFocusable
       ref={focusAnchor}
@@ -185,9 +309,29 @@ export function VitaShell() {
       <StatusBar now={now} />
 
       {view.kind === "home" ? (
-        <VitaHome selectedIndex={view.selectedIndex} />
+        <VitaHome
+          apps={apps}
+          selectedIndex={view.selectedIndex}
+          pageDirection={pageDirection}
+          onSelect={selectBubble}
+          onActivate={openApp}
+          onPageChange={changePage}
+        />
+      ) : liveAreaApp ? (
+        <LiveArea
+          app={liveAreaApp}
+          onStart={startLiveArea}
+          onBack={backToHome}
+        />
       ) : (
-        <LiveArea app={VITA_APPS[view.appIndex]} />
+        <VitaHome
+          apps={apps}
+          selectedIndex={0}
+          pageDirection={null}
+          onSelect={selectBubble}
+          onActivate={openApp}
+          onPageChange={changePage}
+        />
       )}
 
       <button
