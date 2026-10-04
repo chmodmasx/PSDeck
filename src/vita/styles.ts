@@ -1,7 +1,8 @@
 export const VITA_STYLES = `
 .psdeck-vita-root {
-  --vita-blue: #1596db;
-  --vita-blue-deep: #064f96;
+  --vita-blue: #168fd5;
+  --vita-blue-deep: #07569b;
+  --vita-bubble-size: clamp(78px, 11.5vw, 112px);
   position: fixed;
   inset: 0;
   z-index: 9999;
@@ -10,8 +11,11 @@ export const VITA_STYLES = `
   color: white;
   font-family: "Noto Sans", "DejaVu Sans", Arial, sans-serif;
   background:
-    radial-gradient(circle at 18% 15%, rgba(255,255,255,.18), transparent 22%),
-    linear-gradient(160deg, #29a6df 0%, #0c80c7 48%, #075799 100%);
+    radial-gradient(circle at 48% 103%, rgba(255,255,255,.8) 0 1%, rgba(255,255,255,.28) 9%, transparent 32%),
+    radial-gradient(ellipse at 52% 108%, rgba(255,255,255,.34), transparent 42%),
+    linear-gradient(160deg, #25a7e7 0%, #0a83d0 46%, #07559b 100%);
+  touch-action: none;
+  user-select: none;
 }
 
 .psdeck-vita-root:focus,
@@ -19,65 +23,50 @@ export const VITA_STYLES = `
   outline: none !important;
 }
 
-.psdeck-vita-root::before,
-.psdeck-vita-root::after {
+.psdeck-vita-root::before {
   content: "";
   position: absolute;
+  inset: auto -8% -12% -8%;
+  height: 38%;
   pointer-events: none;
-  border: 2px solid rgba(255,255,255,.10);
-  border-radius: 50%;
-}
-
-.psdeck-vita-root::before {
-  width: 680px;
-  height: 680px;
-  right: -240px;
-  top: -260px;
-  box-shadow:
-    0 0 0 70px rgba(255,255,255,.025),
-    0 0 0 145px rgba(255,255,255,.018);
-}
-
-.psdeck-vita-root::after {
-  width: 520px;
-  height: 520px;
-  left: -280px;
-  bottom: -240px;
-  box-shadow:
-    0 0 0 60px rgba(255,255,255,.024),
-    0 0 0 128px rgba(255,255,255,.016);
+  border-radius: 50% 50% 0 0;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.42) 58%, rgba(255,255,255,.12));
+  filter: blur(6px);
+  transform: skewY(-2deg);
 }
 
 .vita-statusbar {
   position: absolute;
-  z-index: 30;
+  z-index: 50;
   top: 0;
   left: 0;
   right: 0;
-  height: 38px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 18px;
-  background: linear-gradient(180deg, rgba(0,0,0,.30), rgba(0,0,0,.13));
-  border-bottom: 1px solid rgba(255,255,255,.16);
-  font-size: 13px;
-  text-shadow: 0 1px 3px rgba(0,0,0,.35);
+  padding: 0 13px;
+  background: rgba(7, 16, 25, .93);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  font-size: 12px;
+  text-shadow: 0 1px 2px rgba(0,0,0,.55);
 }
 
 .vita-status-left {
-  opacity: .88;
-  font-weight: 600;
+  font-size: 11px;
+  opacity: .82;
+  font-weight: 500;
 }
 
 .vita-status-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
 }
 
 .vita-wifi {
-  font-size: 15px;
+  font-size: 13px;
   transform: rotate(35deg);
   opacity: .9;
 }
@@ -85,9 +74,9 @@ export const VITA_STYLES = `
 .vita-battery {
   display: inline-block;
   position: relative;
-  width: 25px;
-  height: 11px;
-  border: 1px solid rgba(255,255,255,.9);
+  width: 23px;
+  height: 10px;
+  border: 1px solid rgba(255,255,255,.92);
   border-radius: 2px;
   padding: 1px;
 }
@@ -96,397 +85,473 @@ export const VITA_STYLES = `
   content: "";
   position: absolute;
   right: -4px;
-  top: 3px;
+  top: 2px;
   width: 2px;
   height: 5px;
   border-radius: 0 1px 1px 0;
-  background: rgba(255,255,255,.8);
+  background: rgba(255,255,255,.82);
 }
 
 .vita-battery span {
   display: block;
   width: 76%;
   height: 100%;
-  background: rgba(255,255,255,.9);
+  background: #b9eb4c;
 }
 
 .vita-home {
   position: absolute;
-  inset: 38px 0 0;
+  inset: 32px 0 0;
   z-index: 5;
-  animation: vita-home-enter 280ms cubic-bezier(.18,.84,.27,1);
+  overflow: hidden;
+  touch-action: none;
 }
 
-.vita-home-grid {
+.vita-home-page {
   position: absolute;
-  left: 50%;
-  top: 51%;
-  width: 760px;
-  height: 560px;
-  transform: translate(-50%, -50%);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: 240px;
-  align-items: center;
-  justify-items: center;
+  inset: 2% 4.2% 2.8% 4.2%;
+}
+
+.vita-home-page.page-enter-next {
+  animation: vita-page-enter-next 260ms cubic-bezier(.18,.84,.27,1);
+}
+
+.vita-home-page.page-enter-previous {
+  animation: vita-page-enter-previous 260ms cubic-bezier(.18,.84,.27,1);
 }
 
 .vita-bubble-slot {
-  width: 210px;
-  height: 220px;
+  position: absolute;
+  width: calc(var(--vita-bubble-size) * 1.42);
+  height: calc(var(--vita-bubble-size) * 1.42);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  transform: translate(-50%, -50%);
 }
 
-.vita-bubble-slot:nth-child(2),
-.vita-bubble-slot:nth-child(5) {
-  transform: translateY(42px);
-}
+.vita-slot-0 { left: 26%; top: 18%; }
+.vita-slot-1 { left: 50%; top: 18%; }
+.vita-slot-2 { left: 74%; top: 18%; }
+
+.vita-slot-3 { left: 14%; top: 50%; }
+.vita-slot-4 { left: 38%; top: 50%; }
+.vita-slot-5 { left: 62%; top: 50%; }
+.vita-slot-6 { left: 86%; top: 50%; }
+
+.vita-slot-7 { left: 26%; top: 82%; }
+.vita-slot-8 { left: 50%; top: 82%; }
+.vita-slot-9 { left: 74%; top: 82%; }
 
 .vita-bubble {
   --bubble-accent: #2f9be9;
   --bubble-accent-dark: #07558f;
   position: relative;
-  width: 144px;
-  height: 144px;
+  flex: 0 0 auto;
+  width: var(--vita-bubble-size);
+  height: var(--vita-bubble-size);
+  padding: 0;
+  border: 2px solid rgba(255,255,255,.68);
   border-radius: 50%;
-  display: grid;
-  place-items: center;
   overflow: hidden;
-  transform: scale(1);
+  appearance: none;
   background:
-    radial-gradient(circle at 33% 25%, rgba(255,255,255,.68), rgba(255,255,255,.09) 24%, transparent 38%),
-    radial-gradient(circle at 50% 100%, var(--bubble-accent-dark), transparent 65%),
+    radial-gradient(circle at 33% 24%, rgba(255,255,255,.65), transparent 34%),
     linear-gradient(155deg, var(--bubble-accent), var(--bubble-accent-dark));
-  border: 3px solid rgba(255,255,255,.62);
   box-shadow:
-    inset 0 0 0 2px rgba(0,0,0,.08),
-    inset 0 -18px 28px rgba(0,0,0,.16),
-    0 8px 18px rgba(0,0,0,.25);
+    inset 0 0 0 2px rgba(0,0,0,.10),
+    inset 0 -13px 25px rgba(0,0,0,.18),
+    0 5px 12px rgba(0,0,0,.30);
   transition:
-    transform 180ms cubic-bezier(.2,.86,.25,1.15),
-    filter 180ms ease,
-    box-shadow 180ms ease;
+    transform 165ms cubic-bezier(.2,.86,.25,1.15),
+    filter 165ms ease,
+    box-shadow 165ms ease;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.vita-bubble-artwork {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .vita-bubble-gloss {
   position: absolute;
-  inset: 7px 16px auto;
-  height: 48%;
+  z-index: 2;
+  left: 8%;
+  right: 8%;
+  top: 4%;
+  height: 42%;
   border-radius: 50%;
-  background: linear-gradient(180deg, rgba(255,255,255,.36), rgba(255,255,255,0));
-  transform: scaleY(.68);
+  background: linear-gradient(180deg, rgba(255,255,255,.43), rgba(255,255,255,.10) 52%, rgba(255,255,255,0));
+  transform: scaleY(.72);
   transform-origin: top;
   pointer-events: none;
 }
 
-.vita-bubble-icon {
-  position: relative;
-  z-index: 2;
-  width: 70px;
-  height: 70px;
-  color: rgba(255,255,255,.97);
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,.24));
-}
-
-.vita-bubble-icon svg {
-  width: 100%;
-  height: 100%;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 .vita-bubble.selected {
-  transform: scale(1.16);
-  filter: brightness(1.11) saturate(1.08);
+  transform: scale(1.11);
+  filter: brightness(1.08) saturate(1.05);
   box-shadow:
     inset 0 0 0 2px rgba(0,0,0,.06),
-    inset 0 -18px 28px rgba(0,0,0,.12),
-    0 0 0 5px rgba(255,255,255,.38),
-    0 12px 28px rgba(0,0,0,.30);
-  animation: vita-bubble-float 1.85s ease-in-out infinite;
+    0 0 0 4px rgba(255,255,255,.40),
+    0 8px 20px rgba(0,0,0,.32);
+  animation: vita-bubble-float 2.05s ease-in-out infinite;
 }
 
 .vita-bubble-label {
-  margin-top: 13px;
-  padding: 4px 12px;
-  border-radius: 11px;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: .01em;
-  text-shadow: 0 2px 4px rgba(0,0,0,.5);
-  opacity: .78;
-  transition: 150ms ease;
+  max-width: calc(var(--vita-bubble-size) * 1.5);
+  margin-top: 6px;
+  padding: 2px 7px;
+  border-radius: 8px;
+  overflow: hidden;
+  color: rgba(255,255,255,.94);
+  font-size: clamp(10px, 1.45vw, 13px);
+  font-weight: 500;
+  line-height: 1.18;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.82),
+    0 0 5px rgba(0,0,0,.36);
+  white-space: nowrap;
+  opacity: .88;
+  transition: 140ms ease;
 }
 
 .vita-bubble-label.selected {
   opacity: 1;
-  background: rgba(0,0,0,.22);
+  background: rgba(0,0,0,.20);
 }
 
 .vita-page-indicator {
   position: absolute;
-  right: 22px;
+  z-index: 20;
+  left: 8px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
-.vita-page-indicator span {
+.vita-page-indicator button {
   width: 9px;
   height: 9px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.74);
   border-radius: 50%;
-  border: 1px solid rgba(255,255,255,.7);
+  background: rgba(12,75,126,.36);
+  box-shadow: 0 1px 3px rgba(0,0,0,.28);
+  appearance: none;
 }
 
-.vita-page-indicator span.active {
+.vita-page-indicator button.active {
   background: white;
-  box-shadow: 0 0 7px rgba(255,255,255,.75);
+  box-shadow: 0 0 6px rgba(255,255,255,.75);
 }
 
 .vita-livearea {
   --live-accent: #2f9be9;
   --live-accent-dark: #07558f;
   position: absolute;
-  inset: 38px 0 0;
+  inset: 32px 0 0;
   z-index: 8;
   overflow: hidden;
   background:
-    linear-gradient(145deg, rgba(255,255,255,.13), transparent 30%),
+    linear-gradient(145deg, rgba(255,255,255,.10), transparent 30%),
     linear-gradient(150deg, var(--live-accent), var(--live-accent-dark));
-  animation: vita-livearea-enter 300ms cubic-bezier(.18,.84,.27,1);
+  animation: vita-livearea-enter 280ms cubic-bezier(.18,.84,.27,1);
+}
+
+.vita-livearea-backdrop-art {
+  position: absolute;
+  inset: -7%;
+  width: 114%;
+  height: 114%;
+  object-fit: cover;
+  opacity: .20;
+  filter: blur(13px) saturate(.82) brightness(.75);
+  transform: scale(1.05);
 }
 
 .vita-livearea-background {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  opacity: .7;
+  background:
+    linear-gradient(90deg, rgba(5,26,46,.32), transparent 46%),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.12));
 }
 
 .vita-livearea-orb {
   position: absolute;
   border-radius: 50%;
-  border: 2px solid rgba(255,255,255,.18);
-  box-shadow: inset 0 0 70px rgba(255,255,255,.08);
+  border: 2px solid rgba(255,255,255,.14);
+  box-shadow: inset 0 0 60px rgba(255,255,255,.06);
 }
 
 .vita-livearea-orb-one {
-  width: 620px;
-  height: 620px;
-  right: -100px;
-  top: -260px;
+  width: 55vw;
+  height: 55vw;
+  right: -16vw;
+  top: -30vw;
 }
 
 .vita-livearea-orb-two {
-  width: 430px;
-  height: 430px;
-  left: -120px;
-  bottom: -180px;
+  width: 38vw;
+  height: 38vw;
+  left: -16vw;
+  bottom: -20vw;
+}
+
+.vita-livearea-back {
+  position: absolute;
+  z-index: 10;
+  left: 14px;
+  top: 12px;
+  width: 40px;
+  height: 40px;
+  padding: 0 0 4px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.50);
+  border-radius: 50%;
+  background: rgba(0,0,0,.18);
+  color: white;
+  font: inherit;
+  font-size: 32px;
+  line-height: 1;
+  appearance: none;
 }
 
 .vita-livearea-header {
   position: absolute;
-  z-index: 3;
-  left: 66px;
-  top: 54px;
+  z-index: 4;
+  left: 68px;
+  top: 24px;
   display: flex;
   align-items: center;
-  gap: 22px;
+  gap: 15px;
 }
 
 .vita-livearea-appicon {
-  width: 88px;
-  height: 88px;
-  padding: 18px;
-  border-radius: 22px;
-  background: rgba(255,255,255,.20);
-  border: 1px solid rgba(255,255,255,.38);
-  box-shadow: 0 7px 18px rgba(0,0,0,.18);
+  width: 70px;
+  height: 70px;
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,.58);
+  border-radius: 18px;
+  background: rgba(255,255,255,.18);
+  box-shadow: 0 5px 14px rgba(0,0,0,.24);
 }
 
-.vita-livearea-appicon svg {
+.vita-livearea-appicon-image {
   width: 100%;
   height: 100%;
-  fill: none;
-  stroke: white;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  object-fit: cover;
 }
 
 .vita-livearea-header h1 {
-  margin: 0 0 4px;
-  font-size: 31px;
+  max-width: 450px;
+  margin: 0 0 2px;
+  overflow: hidden;
+  font-size: clamp(23px, 3.2vw, 31px);
   font-weight: 500;
-  text-shadow: 0 2px 6px rgba(0,0,0,.27);
+  text-overflow: ellipsis;
+  text-shadow: 0 2px 6px rgba(0,0,0,.30);
+  white-space: nowrap;
 }
 
 .vita-livearea-header p {
   margin: 0;
-  font-size: 15px;
-  opacity: .78;
+  font-size: 13px;
+  opacity: .8;
 }
 
 .vita-livearea-content {
   position: absolute;
-  z-index: 3;
-  left: 64px;
-  right: 64px;
-  top: 190px;
-  bottom: 70px;
+  z-index: 4;
+  left: 7%;
+  right: 7%;
+  top: 122px;
+  bottom: 47px;
   display: grid;
-  grid-template-columns: 1.5fr .8fr;
-  gap: 46px;
+  grid-template-columns: 1.25fr .75fr;
+  gap: 5vw;
   align-items: center;
 }
 
 .vita-livearea-card {
-  min-height: 275px;
-  padding: 28px 32px;
-  border-radius: 26px;
+  min-height: 190px;
+  padding: 22px 25px;
+  border: 1px solid rgba(255,255,255,.31);
+  border-radius: 22px;
   background:
-    linear-gradient(145deg, rgba(255,255,255,.27), rgba(255,255,255,.10));
-  border: 1px solid rgba(255,255,255,.34);
+    linear-gradient(145deg, rgba(255,255,255,.26), rgba(255,255,255,.09));
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.25),
-    0 16px 38px rgba(0,0,0,.18);
+    inset 0 1px 0 rgba(255,255,255,.24),
+    0 12px 30px rgba(0,0,0,.18);
   backdrop-filter: blur(5px);
 }
 
 .vita-livearea-card-title {
-  font-size: 17px;
+  font-size: 13px;
   font-weight: 700;
-  opacity: .82;
-  text-transform: uppercase;
   letter-spacing: .08em;
+  opacity: .78;
+  text-transform: uppercase;
 }
 
 .vita-livearea-card-copy {
-  margin-top: 22px;
-  font-size: 28px;
+  margin-top: 15px;
+  font-size: clamp(20px, 2.8vw, 28px);
   font-weight: 500;
 }
 
 .vita-livearea-details {
-  margin-top: 30px;
+  margin-top: 22px;
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .vita-livearea-details span {
-  padding: 8px 12px;
-  border-radius: 16px;
-  background: rgba(0,0,0,.17);
-  border: 1px solid rgba(255,255,255,.20);
-  font-size: 13px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 14px;
+  background: rgba(0,0,0,.15);
+  font-size: 11px;
 }
 
-.vita-start-wrap {
-  display: grid;
-  place-items: center;
-}
-
-.vita-start-button {
-  width: 184px;
-  height: 184px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background:
-    radial-gradient(circle at 35% 25%, rgba(255,255,255,.85), rgba(255,255,255,.2) 24%, transparent 40%),
-    linear-gradient(145deg, rgba(255,255,255,.38), rgba(255,255,255,.13));
-  border: 4px solid rgba(255,255,255,.76);
+.vita-livearea-gate {
+  position: relative;
+  width: clamp(150px, 22vw, 205px);
+  aspect-ratio: 1 / 1;
+  justify-self: center;
+  padding: 0;
+  overflow: hidden;
+  border: 3px solid rgba(255,255,255,.74);
+  border-radius: 22% 22% 42% 22%;
+  appearance: none;
+  background: rgba(255,255,255,.20);
   box-shadow:
-    0 0 0 6px rgba(255,255,255,.15),
-    0 14px 32px rgba(0,0,0,.25);
-  animation: vita-start-pulse 1.8s ease-in-out infinite;
+    0 0 0 5px rgba(255,255,255,.12),
+    0 12px 28px rgba(0,0,0,.28);
+  transform: rotate(-2deg);
+  cursor: pointer;
 }
 
-.vita-start-button span {
-  font-size: 24px;
+.vita-livearea-gate-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.vita-livearea-gate-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.12), transparent 42%),
+    linear-gradient(0deg, rgba(0,0,0,.58), transparent 45%);
+}
+
+.vita-livearea-gate-label {
+  position: absolute;
+  z-index: 2;
+  left: 14px;
+  right: 14px;
+  bottom: 12px;
+  padding: 7px 12px;
+  border: 1px solid rgba(255,255,255,.42);
+  border-radius: 16px;
+  background: rgba(0,0,0,.36);
+  color: white;
+  font: inherit;
+  font-size: 17px;
   font-weight: 600;
-  text-shadow: 0 2px 4px rgba(0,0,0,.32);
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(0,0,0,.65);
 }
 
 .vita-livearea-hint {
   position: absolute;
-  right: 24px;
-  bottom: 18px;
-  z-index: 4;
+  right: 18px;
+  bottom: 13px;
+  z-index: 7;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  opacity: .72;
+  gap: 6px;
+  font-size: 10px;
+  opacity: .76;
 }
 
 .vita-livearea-hint span {
-  width: 21px;
-  height: 21px;
+  width: 19px;
+  height: 19px;
   display: inline-grid;
   place-items: center;
-  margin-left: 10px;
+  margin-left: 8px;
   border: 1px solid rgba(255,255,255,.72);
   border-radius: 50%;
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .vita-dev-exit {
   position: absolute;
-  z-index: 40;
-  left: 14px;
-  bottom: 10px;
+  z-index: 60;
+  left: 12px;
+  bottom: 7px;
+  padding: 3px;
   border: 0;
   background: transparent;
-  color: rgba(255,255,255,.30);
+  color: rgba(255,255,255,.24);
   font: inherit;
-  font-size: 10px;
-  pointer-events: auto;
+  font-size: 9px;
 }
 
 @keyframes vita-bubble-float {
-  0%, 100% { transform: scale(1.16) translateY(0) rotate(-.5deg); }
-  50% { transform: scale(1.16) translateY(-5px) rotate(.5deg); }
+  0%, 100% { transform: scale(1.11) translateY(0); }
+  50% { transform: scale(1.11) translateY(-2px); }
 }
 
-@keyframes vita-start-pulse {
-  0%, 100% { transform: scale(1); filter: brightness(1); }
-  50% { transform: scale(1.035); filter: brightness(1.08); }
+@keyframes vita-page-enter-next {
+  from { opacity: 0; transform: translateY(18%); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes vita-home-enter {
-  from { opacity: 0; transform: scale(.97); }
-  to { opacity: 1; transform: scale(1); }
+@keyframes vita-page-enter-previous {
+  from { opacity: 0; transform: translateY(-18%); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes vita-livearea-enter {
-  from { opacity: 0; transform: translateX(42px) scale(.985); }
+  from { opacity: 0; transform: translateX(7%) scale(.985); }
   to { opacity: 1; transform: translateX(0) scale(1); }
 }
 
-@media (max-width: 1000px) {
-  .vita-home-grid {
-    width: 680px;
-    height: 520px;
+@media (max-height: 560px) {
+  .psdeck-vita-root {
+    --vita-bubble-size: clamp(74px, 10.8vw, 98px);
   }
 
-  .vita-bubble {
-    width: 132px;
-    height: 132px;
+  .vita-bubble-label {
+    margin-top: 4px;
   }
 
-  .vita-bubble-icon {
-    width: 62px;
-    height: 62px;
+  .vita-livearea-content {
+    top: 112px;
+  }
+
+  .vita-livearea-card {
+    min-height: 170px;
   }
 }
 `;
